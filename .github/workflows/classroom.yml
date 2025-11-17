@@ -13,7 +13,7 @@ jobs:
   grade-assignment:
     name: Compute a preliminary grade
     runs-on: ubuntu-latest
-    container: python:3
+    container: python:3.13.2
     steps:
       - name: Checkout head
         uses: actions/checkout@v3
