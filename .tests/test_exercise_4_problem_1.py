@@ -15,16 +15,16 @@ class TestProblem1:
 
         assert isinstance(variables['grid'], pd.DataFrame)
 
-    @points(0.5, "Problem 1, Part 1: Did you set the correct index in the `grid` dataframe?")
+    @points(0.5, "Problem 1, Part 1: Does the `grid` dataframe contain the `YKR_ID` identifiers (as a column or as the index)?")
     def test_problem_1_part_1_index(self, problem1):
         section_data, namespace = problem1
         section = "Part 1"
         variables = section_data[section]['variables']
         grid = variables['grid']
 
-        assert grid.index.name == 'YKR_ID'
-        assert isinstance(grid.index, pd.Index)
-        assert grid.index.dtype == 'int64'
+        # using `YKR_ID` as the index makes the join easier, but is not required
+        ykr_id = grid.index if grid.index.name == 'YKR_ID' else grid['YKR_ID']
+        assert pd.api.types.is_integer_dtype(ykr_id)
         
 
     @points(1, "Problem 1, Part 2: Did you join the travel time data into the grid cells, using the correct column names?")
@@ -38,7 +38,7 @@ class TestProblem1:
         assert all(column in variables['grid'].columns for column in required_columns)
         
 
-    @points(1, "Problem 1, Part 2: Did you remove the NaN values from the travel time data?")
+    @points(1, "Problem 1, Part 2: Did you remove the no-data values (-1) from the travel time data?")
     def test_problem_1_part_2_nan(self, problem1):
         section_data, namespace = problem1
         section = "Part 2"
@@ -46,7 +46,8 @@ class TestProblem1:
         grid = variables['grid']
         for shopping_centre in ("Itis", "Myyrmanni"):
             for column in ("car_r_t", "pt_r_t"):
-                assert -1 not in grid[f"{column}_{shopping_centre}"]
+                # (`-1 in series` would check the index, not the values)
+                assert not (grid[f"{column}_{shopping_centre}"] == -1).any()
 
     @points(2, "Problem 1, Part 3: Did you create the classification columns?")
     def test_problem_1_part_3_columns_exist(self, problem1):
